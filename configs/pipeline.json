@@ -1,0 +1,18 @@
+{
+  "random_seed": 42,
+  "n_orders": 15000,
+  "start_date": "2024-01-01",
+  "end_date": "2025-12-31",
+  "train_end": "2025-04-30",
+  "tuning_end": "2025-08-31",
+  "calibration_end": "2025-10-31",
+  "review_capacity": 0.10,
+  "monitor_capacity": 0.25,
+  "model": {
+    "n_estimators": 250,
+    "learning_rate": 0.04,
+    "max_depth": 3,
+    "min_samples_leaf": 20,
+    "subsample": 0.85
+  }
+}
