@@ -9,6 +9,22 @@ An end-to-end decision system that estimates late-delivery risk at order routing
 
 > All orders, customers, warehouses, carriers, network conditions, and results are synthetic. Executed metrics validate this implementation on a controlled fixture; they are not claims about production accuracy or business impact.
 
+## Executed management decision
+
+**Shadow-test the model queue and keep the rule baseline as fallback.** At 10% review
+capacity, the model captured 21.4% of weighted late-order harm versus 17.1% for the
+baseline: a **+4.4 percentage-point** difference. A paired day-block bootstrap gives a
+95% interval from **-0.4 to +8.1 percentage points**, so the advantage does not exclude
+zero. The model also has lower holdout average precision: **0.389 versus 0.417**.
+
+The fixed `fixed-capacity-rule-v1` therefore does not authorize replacement of the
+baseline. The evidence supports a later shadow evaluation, not automatic adoption.
+
+[Executed decision report](reports/executive_summary.md) ·
+[Bootstrap evidence](reports/paired_policy_bootstrap.csv)
+
+![Paired fixed-capacity difference](reports/figures/paired_capture_difference.png)
+
 ## The decision
 
 An operations team cannot manually inspect every active order. The useful question is:
@@ -37,9 +53,17 @@ The final November-December 2025 holdout was excluded from model selection, fitt
 
 The model did not beat the baseline on holdout average precision. It did produce a better decision queue at the stated 10% capacity: weighted harm capture was **1.26x** the baseline. This distinction matters because the operational decision is a constrained ranking problem, not an unconstrained classification exercise.
 
+The paired day-block bootstrap estimates the model-minus-baseline weighted-harm
+capture difference at **+4.4 percentage points**, with a 95% interval from **-0.4 to
++8.1 percentage points**. The interval includes zero. Although 96.1% of the 2,000
+bootstrap replicates were positive, that share is descriptive and is not a posterior
+probability that the model is better.
+
 The model had beaten the baseline on the earlier tuning period (average precision 0.191 vs 0.174). The reversal on the final seasonal holdout is reported rather than hidden; it is evidence that monitoring and fallback rules are necessary.
 
 ![Capacity capture curve](reports/figures/capacity_capture.png)
+
+![Paired capture difference](reports/figures/paired_capture_difference.png)
 
 ## Workflow
 
@@ -153,6 +177,7 @@ The test suite checks:
 - exclusion of outcome fields from model features;
 - strict temporal partition boundaries;
 - exact review-capacity enforcement;
+- deterministic paired day-block bootstrap and fixed decision-rule behavior;
 - consistency between machine-readable metrics and scored artifacts;
 - synthetic-only publication safety.
 
@@ -162,6 +187,7 @@ GitHub Actions runs Ruff, the complete pipeline, Pytest, and the sensitive-conte
 
 - Synthetic behavior cannot establish production accuracy, business value, or real network dynamics.
 - The final holdout contains only two peak-season months; it is not evidence of year-round stability.
+- The bootstrap resamples observed holdout dates; it does not cover model refitting, a new season, or impact-weight uncertainty.
 - Holdout average precision was below the rule baseline even though the fixed-capacity queue performed better.
 - The impact formula reflects explicit priorities, not measured customer harm or treatment effect.
 - Reviewing an order is not the same as preventing a delay; intervention effectiveness requires an experiment or credible causal design.
@@ -180,4 +206,3 @@ GitHub Actions runs Ruff, the complete pipeline, Pytest, and the sensitive-conte
 ## Author
 
 Parisa Mostafavi · [LinkedIn](https://www.linkedin.com/in/parisa-mostafavi/)
-

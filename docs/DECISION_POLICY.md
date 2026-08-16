@@ -32,3 +32,18 @@ Ties are resolved deterministically using synthetic order ID.
 - If calibration or capacity-level capture deteriorates, fall back to the documented rule.
 - Treatment effectiveness must be measured separately.
 
+## Versioned model-versus-baseline rule
+
+`fixed-capacity-rule-v1` uses the paired 95% interval for the model-minus-baseline
+weighted-harm capture difference at the configured review capacity:
+
+| Output | Condition |
+|---|---|
+| `Adopt model queue` | Capture interval lower bound > 0 and model average precision is not below baseline |
+| `Shadow-test model queue` | Point capture difference > 0, but its interval includes zero or model average precision is below baseline |
+| `Keep rule baseline` | Point capture difference <= 0 or its optimistic interval bound <= 0 |
+
+The current output is `Shadow-test model queue`: the point capture difference is
+positive, but its interval includes zero and model average precision is lower. This
+rule governs the demonstration queue only; it does not establish that review prevents
+harm or creates economic value.

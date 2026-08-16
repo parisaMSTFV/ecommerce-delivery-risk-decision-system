@@ -12,5 +12,4 @@ lint:
 sensitive:
 	python scripts/check_sensitive.py
 
-check: lint test sensitive
-
+check: lint reproduce test sensitive

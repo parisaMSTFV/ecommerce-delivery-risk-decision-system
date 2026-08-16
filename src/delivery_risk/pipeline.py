@@ -7,7 +7,12 @@ import pandas as pd
 from sklearn.metrics import average_precision_score
 
 from .config import load_config, project_root
-from .evaluation import evaluate_scores, risk_deciles
+from .evaluation import (
+    evaluate_scores,
+    fixed_capacity_policy_decision,
+    paired_day_bootstrap_capture,
+    risk_deciles,
+)
 from .features import MODEL_FEATURES, TARGET, build_feature_table, temporal_split
 from .model import baseline_risk_score, build_risk_model, fit_model
 from .policy import add_decision_policy
@@ -65,6 +70,30 @@ def run_pipeline(root: Path | None = None) -> dict:
         config["monitor_capacity"],
     )
     metrics = evaluate_scores(scores, config["review_capacity"])
+    bootstrap_summary, bootstrap_distribution = paired_day_bootstrap_capture(
+        scores,
+        review_capacity=config["review_capacity"],
+        replicates=config["policy_bootstrap"]["replicates"],
+        confidence_level=config["policy_bootstrap"]["confidence_level"],
+        seed=config["policy_bootstrap"]["seed"],
+    )
+    metrics.update(bootstrap_summary)
+    recommendation, recommendation_reason = fixed_capacity_policy_decision(
+        float(metrics["weighted_harm_capture_difference"]),
+        float(metrics["weighted_harm_capture_difference_ci_lower"]),
+        float(metrics["weighted_harm_capture_difference_ci_upper"]),
+        float(metrics["average_precision"]),
+        float(metrics["baseline_average_precision"]),
+    )
+    metrics.update(
+        {
+            "policy_recommendation": recommendation,
+            "policy_recommendation_reason": recommendation_reason,
+            "policy_decision_rule_version": config[
+                "policy_decision_rule_version"
+            ],
+        }
+    )
     metrics.update(
         {
             "train_orders": int(len(splits["train"])),
@@ -101,12 +130,23 @@ def run_pipeline(root: Path | None = None) -> dict:
     )
     deciles.to_csv(artifacts_dir / "risk_deciles.csv", index=False)
     importance.to_csv(artifacts_dir / "feature_importance.csv", index=False)
+    bootstrap_distribution.to_csv(
+        reports_dir / "paired_policy_bootstrap.csv",
+        index=False,
+    )
     metrics["data_fingerprint"] = _fingerprint(
         [data_dir / "synthetic_orders.csv", data_dir / "synthetic_network_context.csv"]
     )
     write_metrics(metrics, reports_dir / "metrics.json")
     write_executive_summary(metrics, reports_dir / "executive_summary.md")
-    create_figures(scores, deciles, importance, figures_dir)
+    create_figures(
+        scores,
+        deciles,
+        importance,
+        bootstrap_distribution,
+        metrics,
+        figures_dir,
+    )
     return metrics
 
 
@@ -116,7 +156,8 @@ def main() -> None:
         "Pipeline complete: "
         f"AP={metrics['average_precision']:.3f}, "
         f"weighted capture@{metrics['review_capacity']:.0%}="
-        f"{metrics['weighted_harm_capture_at_capacity']:.1%}"
+        f"{metrics['weighted_harm_capture_at_capacity']:.1%}, "
+        f"decision={metrics['policy_recommendation']}"
     )
 
 

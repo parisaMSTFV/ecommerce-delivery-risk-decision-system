@@ -14,5 +14,6 @@ if __name__ == "__main__":
         "Pipeline complete: "
         f"AP={result['average_precision']:.3f}, "
         f"weighted capture@{result['review_capacity']:.0%}="
-        f"{result['weighted_harm_capture_at_capacity']:.1%}"
+        f"{result['weighted_harm_capture_at_capacity']:.1%}, "
+        f"decision={result['policy_recommendation']}"
     )

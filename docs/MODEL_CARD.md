@@ -28,8 +28,14 @@ Prioritize fictional ecommerce orders for analyst review after carrier and wareh
 | Expected calibration error | 0.028 |
 | Precision at 10% review capacity | 47.7% |
 | Weighted harm capture at 10% capacity | 21.4% |
+| Difference vs baseline weighted harm capture | +4.4 percentage points |
+| Paired day-block bootstrap 95% interval | -0.4 to +8.1 percentage points |
 
 The baseline achieved higher holdout average precision (0.417) but lower precision and weighted capture at the fixed decision capacity. This trade-off must remain visible in any model review.
+
+The versioned decision rule recommends `Shadow-test model queue`, not adoption. The
+capacity-difference interval includes zero, and the model's full-ranking average
+precision is below baseline.
 
 ## Monitoring requirements
 
@@ -38,4 +44,3 @@ A production version would monitor late-rate shift, feature missingness, calibra
 ## Ethical and operational considerations
 
 Premium status and order value influence the explicit impact policy, not the probability model's definition of lateness. A real implementation would require review of whether such prioritization is acceptable and whether protected or proxy attributes create unfair service outcomes.
-
