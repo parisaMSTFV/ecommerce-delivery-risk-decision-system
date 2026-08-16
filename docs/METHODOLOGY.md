@@ -48,3 +48,19 @@ Prediction metrics include average precision, ROC AUC, Brier score, log loss, an
 
 Average precision measures ranking over all thresholds. Capacity metrics measure the part of the ranking the team can act on. Both are reported because they can disagree.
 
+## Paired policy uncertainty
+
+The policy comparison uses a paired nonparametric day-block bootstrap on the untouched
+holdout. Each of 2,000 replicates samples the observed holdout order dates with
+replacement. All orders from a sampled date move together, the same sampled dates are
+used for both policies, and each policy's 10% queue is rebuilt inside the replicate.
+
+The reported interval is the 2.5th to 97.5th percentile of the model-minus-baseline
+weighted-harm capture differences. Pairing isolates policy disagreement on the same
+operating sample, while day blocks retain within-day network conditions better than
+independent order resampling.
+
+The bootstrap treats the observed synthetic dates as the empirical population. It does
+not cover model refitting, impact-weight uncertainty, a new peak season, another network,
+or the causal effect and cost of operational review. The share of replicates above zero
+is descriptive and is not interpreted as a posterior probability.

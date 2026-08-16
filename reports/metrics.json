@@ -6,6 +6,11 @@
   "baseline_recall_at_capacity": 0.14551083591331268,
   "baseline_roc_auc": 0.6782265378240611,
   "baseline_weighted_harm_capture_at_capacity": 0.17052250266928065,
+  "bootstrap_confidence_level": 0.95,
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 2407,
+  "bootstrap_share_difference_above_zero": 0.961,
+  "bootstrap_unit": "order_date",
   "brier_score": 0.17211459035471002,
   "calibration_end": "2025-10-31",
   "calibration_orders": 1249,
@@ -16,6 +21,9 @@
   "holdout_orders": 1313,
   "late_order_capture_at_capacity": 0.19504643962848298,
   "log_loss": 0.522378277390412,
+  "policy_decision_rule_version": "fixed-capacity-rule-v1",
+  "policy_recommendation": "Shadow-test model queue",
+  "policy_recommendation_reason": "The capture interval includes zero and average precision is below baseline.",
   "precision_at_capacity": 0.4772727272727273,
   "random_seed": 42,
   "recall_at_capacity": 0.19504643962848298,
@@ -29,5 +37,8 @@
   "tuning_end": "2025-08-31",
   "tuning_orders": 2572,
   "weighted_capture_lift": 1.2567899439610786,
-  "weighted_harm_capture_at_capacity": 0.2143109665738281
+  "weighted_harm_capture_at_capacity": 0.2143109665738281,
+  "weighted_harm_capture_difference": 0.04378846390454744,
+  "weighted_harm_capture_difference_ci_lower": -0.0042585323737272624,
+  "weighted_harm_capture_difference_ci_upper": 0.08143268087634964
 }

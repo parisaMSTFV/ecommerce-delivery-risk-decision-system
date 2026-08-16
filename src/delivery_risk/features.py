@@ -46,9 +46,10 @@ def temporal_split(
     features: pd.DataFrame, train_end: str, tuning_end: str, calibration_end: str
 ) -> dict[str, pd.DataFrame]:
     timestamp = pd.to_datetime(features["order_created_at"])
-    train_cutoff = pd.Timestamp(train_end) + pd.Timedelta(days=1)
-    tuning_cutoff = pd.Timestamp(tuning_end) + pd.Timedelta(days=1)
-    calibration_cutoff = pd.Timestamp(calibration_end) + pd.Timedelta(days=1)
+    one_day = pd.Timedelta(1, unit="D")
+    train_cutoff = pd.Timestamp(train_end) + one_day
+    tuning_cutoff = pd.Timestamp(tuning_end) + one_day
+    calibration_cutoff = pd.Timestamp(calibration_end) + one_day
     splits = {
         "train": features.loc[timestamp < train_cutoff].copy(),
         "tuning": features.loc[(timestamp >= train_cutoff) & (timestamp < tuning_cutoff)].copy(),

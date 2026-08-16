@@ -14,6 +14,21 @@ def test_checked_in_metrics_match_holdout_artifact():
     assert metrics["holdout_orders"] == len(scores)
     assert metrics["holdout_late_orders"] == int(scores["is_late"].sum())
     assert abs(metrics["holdout_late_rate"] - scores["is_late"].mean()) < 1e-12
+    assert abs(
+        metrics["weighted_harm_capture_difference"]
+        - (
+            metrics["weighted_harm_capture_at_capacity"]
+            - metrics["baseline_weighted_harm_capture_at_capacity"]
+        )
+    ) < 1e-12
+    assert metrics["weighted_harm_capture_difference_ci_lower"] < (
+        metrics["weighted_harm_capture_difference"]
+    )
+    assert metrics["weighted_harm_capture_difference_ci_upper"] > (
+        metrics["weighted_harm_capture_difference"]
+    )
+    assert (ROOT / "reports" / "paired_policy_bootstrap.csv").exists()
+    assert (ROOT / "reports" / "figures" / "paired_capture_difference.png").exists()
 
 
 def test_priority_queue_contains_only_priority_review_orders():
