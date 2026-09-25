@@ -153,7 +153,11 @@ python scripts/run_pipeline.py
 python -m pytest -q
 ```
 
-The pipeline regenerates the synthetic inputs, point-in-time feature table, holdout scores, decision queue, metrics, report, and figures. The committed synthetic-data fingerprint is `3caad89899ef1c02`.
+The pipeline writes regenerated synthetic inputs, the point-in-time feature table,
+holdout scores, the decision queue, metrics, report, and figures to the ignored
+`local-runs/latest/` directory. The validated evidence published under `data/`,
+`artifacts/`, and `reports/` remains unchanged. The committed synthetic-data
+fingerprint is `3caad89899ef1c02`.
 
 ## Repository map
 

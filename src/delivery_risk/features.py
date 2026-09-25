@@ -27,10 +27,9 @@ NUMERIC_FEATURES = [
 MODEL_FEATURES = CATEGORICAL_FEATURES + NUMERIC_FEATURES
 
 
-def build_feature_table(data_dir: Path, sql_path: Path, output_path: Path) -> pd.DataFrame:
+def build_feature_table(data_dir: Path, query: str, output_path: Path) -> pd.DataFrame:
     orders = pd.read_csv(data_dir / "synthetic_orders.csv")
     context = pd.read_csv(data_dir / "synthetic_network_context.csv")
-    query = sql_path.read_text(encoding="utf-8")
     with sqlite3.connect(":memory:") as connection:
         orders.to_sql("orders", connection, index=False)
         context.to_sql("network_context", connection, index=False)

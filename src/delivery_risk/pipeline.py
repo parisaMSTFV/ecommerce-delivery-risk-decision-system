@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 from pathlib import Path
 
 import pandas as pd
 from sklearn.metrics import average_precision_score
 
-from .config import load_config, project_root
+from .config import load_config, load_feature_query
 from .evaluation import (
     evaluate_scores,
     fixed_capacity_policy_decision,
@@ -32,12 +33,19 @@ def _fingerprint(paths: list[Path]) -> str:
     return digest.hexdigest()[:16]
 
 
-def run_pipeline(root: Path | None = None) -> dict:
-    root = root or project_root()
-    config = load_config(root / "configs" / "pipeline.json")
-    data_dir = root / "data"
-    artifacts_dir = root / "artifacts"
-    reports_dir = root / "reports"
+def run_pipeline(
+    root: Path | None = None,
+    output_root: Path | None = None,
+) -> dict:
+    source_root = Path(root) if root is not None else None
+    target_root = Path(output_root) if output_root is not None else Path("local-runs/latest")
+    config = load_config(source_root / "configs" / "pipeline.json" if source_root else None)
+    feature_query = load_feature_query(
+        source_root / "sql" / "build_features.sql" if source_root else None
+    )
+    data_dir = target_root / "data"
+    artifacts_dir = target_root / "artifacts"
+    reports_dir = target_root / "reports"
     figures_dir = reports_dir / "figures"
     for directory in (data_dir, artifacts_dir, reports_dir, figures_dir):
         directory.mkdir(parents=True, exist_ok=True)
@@ -45,7 +53,7 @@ def run_pipeline(root: Path | None = None) -> dict:
     generate_synthetic_data(config, data_dir)
     features = build_feature_table(
         data_dir,
-        root / "sql" / "build_features.sql",
+        feature_query,
         artifacts_dir / "feature_table.csv",
     )
     splits = temporal_split(
@@ -150,8 +158,20 @@ def run_pipeline(root: Path | None = None) -> dict:
     return metrics
 
 
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Run the delivery-risk decision pipeline.")
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        default=Path("local-runs/latest"),
+        help="Directory for generated data, artifacts, reports, and figures.",
+    )
+    return parser
+
+
 def main() -> None:
-    metrics = run_pipeline()
+    args = build_parser().parse_args()
+    metrics = run_pipeline(output_root=args.output_root)
     print(
         "Pipeline complete: "
         f"AP={metrics['average_precision']:.3f}, "

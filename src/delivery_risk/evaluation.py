@@ -13,7 +13,7 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
-from .policy import weighted_capture
+from .policy import rank_by_priority, weighted_capture
 
 
 def fixed_capacity_policy_decision(
@@ -139,14 +139,20 @@ def expected_calibration_error(
 
 
 def evaluate_scores(scores: pd.DataFrame, review_capacity: float) -> dict:
+    if scores.empty:
+        raise ValueError("scores cannot be empty")
+    if scores["order_id"].duplicated().any():
+        raise ValueError("scores must contain unique order_id values")
     y_true = scores["is_late"].to_numpy()
     probability = scores["predicted_late_risk"].to_numpy()
     baseline = scores["baseline_risk_score"].to_numpy()
 
     review_count = math.ceil(len(scores) * review_capacity)
-    selected = scores.nlargest(review_count, "priority_score")
+    selected = rank_by_priority(scores, "priority_score").head(review_count)
     y_pred = scores["order_id"].isin(selected["order_id"]).astype(int).to_numpy()
-    baseline_selected = scores.nlargest(review_count, "baseline_priority_score")
+    baseline_selected = rank_by_priority(scores, "baseline_priority_score").head(
+        review_count
+    )
     baseline_pred = scores["order_id"].isin(baseline_selected["order_id"]).astype(int).to_numpy()
 
     total_late = int(y_true.sum())

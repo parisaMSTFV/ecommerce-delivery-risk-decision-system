@@ -5,7 +5,24 @@ from pathlib import Path
 
 import pandas as pd
 
+from delivery_risk.config import load_config, load_feature_query
+from delivery_risk.pipeline import build_parser
+
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_bundled_pipeline_resources_match_repository_sources():
+    assert load_config() == json.loads(
+        (ROOT / "configs" / "pipeline.json").read_text(encoding="utf-8")
+    )
+    assert load_feature_query().strip() == (
+        ROOT / "sql" / "build_features.sql"
+    ).read_text(encoding="utf-8").strip()
+
+
+def test_cli_defaults_to_ignored_local_output():
+    args = build_parser().parse_args([])
+    assert args.output_root == Path("local-runs/latest")
 
 
 def test_checked_in_metrics_match_holdout_artifact():

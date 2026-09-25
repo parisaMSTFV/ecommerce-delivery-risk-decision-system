@@ -41,6 +41,26 @@ def test_weighted_capture_stays_in_unit_interval():
     assert 0 <= capture <= 1
 
 
+def test_weighted_capture_uses_order_id_for_score_ties():
+    frame = pd.DataFrame(
+        {
+            "order_id": ["O-3", "O-1", "O-2", "O-4"],
+            "is_late": [1, 0, 1, 0],
+            "impact_weight": [1.0, 1.0, 1.0, 1.0],
+            "baseline_priority_score": [0.5, 0.5, 0.5, 0.5],
+        }
+    )
+
+    first = weighted_capture(frame, "baseline_priority_score", 0.25)
+    second = weighted_capture(
+        frame.sample(frac=1, random_state=7),
+        "baseline_priority_score",
+        0.25,
+    )
+
+    assert first == second == 0.0
+
+
 def test_fixed_capacity_rule_preserves_baseline_when_evidence_conflicts():
     decision, reason = fixed_capacity_policy_decision(
         capture_difference=0.04,
@@ -67,6 +87,7 @@ def test_paired_day_bootstrap_is_deterministic_and_paired():
         for within_day in range(4):
             rows.append(
                 {
+                    "order_id": f"O-{day:02d}-{within_day}",
                     "order_created_at": pd.Timestamp("2025-11-01")
                     + pd.to_timedelta(day, unit="D"),
                     "is_late": int(within_day == 0),

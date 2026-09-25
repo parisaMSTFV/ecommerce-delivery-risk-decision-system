@@ -6,6 +6,20 @@ import numpy as np
 import pandas as pd
 
 
+def rank_by_priority(scores: pd.DataFrame, ranking_column: str) -> pd.DataFrame:
+    """Rank a queue with a stable, policy-neutral order-id tie break."""
+
+    required = {ranking_column, "order_id"}
+    missing = required - set(scores.columns)
+    if missing:
+        raise ValueError(f"Missing ranking columns: {sorted(missing)}")
+    return scores.sort_values(
+        [ranking_column, "order_id"],
+        ascending=[False, True],
+        kind="mergesort",
+    )
+
+
 def add_decision_policy(
     holdout: pd.DataFrame,
     predicted_risk: np.ndarray,
@@ -42,8 +56,10 @@ def add_decision_policy(
 
 
 def weighted_capture(scores: pd.DataFrame, ranking_column: str, capacity: float) -> float:
+    if not 0 < capacity <= 1:
+        raise ValueError("capacity must be in (0, 1]")
     selected_count = math.ceil(len(scores) * capacity)
-    ranked = scores.sort_values(ranking_column, ascending=False)
+    ranked = rank_by_priority(scores, ranking_column)
     harm = scores["is_late"] * scores["impact_weight"]
     denominator = float(harm.sum())
     if denominator == 0:
