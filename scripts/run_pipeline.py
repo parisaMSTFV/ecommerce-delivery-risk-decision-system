@@ -9,7 +9,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from delivery_risk.pipeline import run_pipeline  # noqa: E402
 
 if __name__ == "__main__":
-    result = run_pipeline(ROOT)
+    result = run_pipeline(ROOT, ROOT / "local-runs" / "latest")
     print(
         "Pipeline complete: "
         f"AP={result['average_precision']:.3f}, "
